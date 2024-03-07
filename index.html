@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Create a floor
+        const floorGeometry = new THREE.PlaneGeometry(100, 100);
+        const floorTexture = new THREE.TextureLoader().load('https://m.media-amazon.com/images/I/81lGsHiMqML.__AC_SX300_SY300_QL70_ML2_.jpg');
+        floorTexture.wrapS = THREE.RepeatWrapping;
+        floorTexture.wrapT = THREE.RepeatWrapping;
+        floorTexture.repeat.set(10, 10);  // Adjust the repeat values as needed
+        const floorMaterial = new THREE.MeshBasicMaterial({ map: floorTexture });
+        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        floor.rotation.x = -Math.PI / 2;
+        scene.add(floor);
+
+        // Create a sky sphere with a web image
+        const skyGeometry = new THREE.SphereGeometry(500, 32, 32);
+        const skyTexture = new THREE.TextureLoader().load('https://cdn.discordapp.com/attachments/1172289995642507314/1205909093144076368/l7uXa1.png?ex=65da155c&is=65c7a05c&hm=d788eff80a8553e01e36da40fad64e9d1ee62c9986f42022025ca273224023c1&');
+        const skyMaterial = new THREE.MeshBasicMaterial({ map: skyTexture, side: THREE.BackSide });
+        const sky = new THREE.Mesh(skyGeometry, skyMaterial);
+        scene.add(sky);
+
+        const playerGeometry = new THREE.CylinderGeometry(0.5, 0.5, 2, 32);
+        const playerMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        const player = new THREE.Mesh(playerGeometry, playerMaterial);
+        player.position.y = 1;
+        scene.add(player);
+
+        camera.position.set(0, 1, 0);
+        player.add(camera);
+        camera.position.set(0, 0.75, -1.5);
+
+        document.addEventListener('keydown', handleKeyDown);
+        document.addEventListener('keyup', handleKeyUp);
+
+        const playerSpeed = 0.1;
+        const keys = { W: false, A: false, S: false, D: false };
+
+        function handleKeyDown(event) {
+            const key = event.key.toUpperCase();
+            if (keys.hasOwnProperty(key)) {
+                keys[key] = true;
+            }
+        }
+
+        function handleKeyUp(event) {
+            const key = event.key.toUpperCase();
+            if (keys.hasOwnProperty(key)) {
+                keys[key] = false;
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            handlePlayerMovement();
+
+            renderer.render(scene, camera);
+        }
+
+        function handlePlayerMovement() {
+    if (keys.W) {
+        // Move player forward in its local Z-axis direction
+        const frontVector = new THREE.Vector3(0, 0, -1);
+        const playerDirection = frontVector.applyQuaternion(player.quaternion);
+        player.position.add(playerDirection.multiplyScalar(playerSpeed));
+    }
+    if (keys.S) {
+        // Move player backward
+        const backVector = new THREE.Vector3(0, 0, 1);
+        const playerDirection = backVector.applyQuaternion(player.quaternion);
+        player.position.add(playerDirection.multiplyScalar(playerSpeed));
+    }
+    if (keys.A) {
+        // Rotate player left
+        player.rotation.y += rotationSpeed;
+    }
+    if (keys.D) {
+        // Rotate player right
+        player.rotation.y -= rotationSpeed;
+    }
+}
+
+        animate();
+    </script>
+</body>
+</html>
